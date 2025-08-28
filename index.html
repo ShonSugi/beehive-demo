@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Market Prediction Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .game-area {
+            padding: 30px;
+        }
+
+        .input-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .ticker-input {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            width: 200px;
+            text-transform: uppercase;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .game-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+
+        .info-card h3 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-card .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .prediction-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .prediction-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .message.error {
+            background: #ffe6e6;
+            color: #d63031;
+            border: 1px solid #fab1a0;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #00b894;
+            border: 1px solid #00b894;
+        }
+
+        .message.info {
+            background: #cce5ff;
+            color: #0984e3;
+            border: 1px solid #74b9ff;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .ticker-input {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .prediction-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 Stock Market Prediction Game</h1>
+            <p>Predict if stock prices will go up or down and test your market intuition!</p>
+        </div>
+        
+        <div class="game-area">
+            <div class="input-section">
+                <h2>Enter a Stock Ticker Symbol</h2>
+                <div class="ticker-input">
+                    <input type="text" id="tickerInput" placeholder="e.g. MSFT, AAPL, GOOGL" maxlength="10">
+                    <button class="btn btn-primary" onclick="startGame()">Start Game</button>
+                </div>
+                <div id="messages"></div>
+            </div>
+
+            <div id="gameContent" class="hidden">
+                <div class="game-info">
+                    <div class="info-card">
+                        <h3>Current Stock</h3>
+                        <div class="value" id="currentStock">-</div>
+                    </div>
+                    <div class="info-card">
+                        <h3>Current Date</h3>
+                        <div class="value" id="currentDate">-</div>
+                    </div>
+                    <div class="info-card">
+                        <h3>Score</h3>
+                        <div class="value" id="score">0</div>
+                    </div>
+                    <div class="info-card">
+                        <h3>Current Price</h3>
+                        <div class="value" id="currentPrice">-</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="stockChart"></canvas>
+                </div>
+
+                <div class="prediction-section" id="predictionSection">
+                    <h3>Will the price go <strong>UP</strong> or <strong>DOWN</strong> tomorrow?</h3>
+                    <div class="prediction-buttons">
+                        <button class="btn btn-success" onclick="makePrediction('up')">📈 UP</button>
+                        <button class="btn btn-danger" onclick="makePrediction('down')">📉 DOWN</button>
+                    </div>
+                </div>
+
+                <div class="prediction-section hidden" id="resultSection">
+                    <div id="predictionResult"></div>
+                    <button class="btn btn-primary" onclick="nextDay()" id="nextDayBtn">Continue to Next Day</button>
+                    <button class="btn btn-primary" onclick="resetGame()" style="margin-left: 10px;">New Game</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
